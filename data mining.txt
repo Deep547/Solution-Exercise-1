@@ -1,0 +1,215 @@
+PART A
+A1. number of attributes: ncol(iris) gives output as 5 #returns the the number of attributes in iris dataset
+    names of	attributes:  names(iris) gives output as "Sepal.Length" "Sepal.Width"  "Petal.Length" "Petal.Width"  "Species" #returns the the names of attributes in iris dataset
+    number of instances:  nrow(iris) gives output as 150 # returns the number of instances in the iris dataset
+   
+A2. The minimum, maximum,mean,median,and the first(25%) and third (75%) quartiles of the iris dataset attributes are found using command summary(iris).
+                  
+A3. irisSubset<-iris[40:85,c('Sepal.Length','Sepal.Width','Petal.Length','Petal.Width','Species')]  ## Fetches all the required rows and stores it in variable irisSubset.
+    save(irisSubset, file = "irisSubset.RData") ## To load the file use load("irisSubset.RData") and then use ls()
+
+A4. rm(irisSubset)#removing the object irisSubset
+    load("irisSubset.RData") #Loading data back in from irisSubset.Rdata
+    irisSubset # it returns the rows 40 to 85
+
+A5. arrange(irisSubset, -Sepal.Length) # Arranges the values as per the Sepal Length in descending Order.
+
+A6. irisSubsetSepal<-iris[iris$Sepal.Length < 5.4, c('Sepal.Length','Sepal.Width','Petal.Length','Petal.Width','Species')]
+# Creating a new subset irisSubsetSepal from iris with Sepal.Length < 5.4. It provides 107 rows as its output.
+
+A7. FUNCTION:
+The function as described below takes specie and attribute as its two arguments. Further, using the subset function we select all the rows from iris dataset which have their specie as passed in function as argument. Then, attaching specie_subset to the search path allows reference to the variables in the data frame by their names alone, rather than as components of the data frame. Then, the minimum and the maximum of the attribute passed to the function are concatenated. Detach command detaches specie_subset, i.e., removes it from the search() path of available R objects. Then the variable c is returned that returns the minimum and maximum value of the attributes as passed to the function.
+
+ minmax <- function(Specie, attribute){ 
+ specie_subset <- subset(iris, iris$Species==Specie); 
+ attach(specie_subset);
+ c <- c(min(attribute),max(attribute));  
+ c} 
+ 
+ minmax("setosa", Petal.Width)  
+ #This is used to call the function and I pass setosa as Species and Petal.Width as attribute to the function.Output returned here is 0.1(min) 0.6(max).Also the species here should must be passed here in quotes as species is a string in the database. 
+
+PART B:
+
+B1.
+irisMissing = read.csv("C:/Users/dkoec/Downloads/irismissing.csv")# Loads the irismissing.csv file in R 
+rownames(irisMissing[!complete.cases(irisMissing),]) # Returns the name of the rows with Missing values.
+   
+B2. 
+irisDrop <- na.omit(irisMissing)# This drops all the missing values from the original irisMissing data frame and assigns the values to irisMissing.
+The various ways of dealing with missing values are:
+a)replacement with attribute mean,median or mode.
+b)replacement with Attribute mean, median or mode for all instances in same class.
+c)replacement with the most probable value: inference-based such as Bayesian estimation.
+
+i.Here I try replacing the missing values with the mean of the data:
+Firstly,function takes data as its argument. Then,for loop loops through all the columns of the given data set.As mean command works only on numeric data adding the if condition allows mean to work on integer data also. Then I check for missing values and replaces them with the mean of the given column by rounding it to 1 digit and finally return the new dataset with missing values replaced with mean of the column.
+
+Meanformissing <- function(data){  
+  for(i in 1:ncol(data)){        
+  if(class(data[,i])=="integer" | class(data[,i])=="numeric") 
+  {data[is.na(data[,i]), i] <- round(mean(data[,i], na.rm = TRUE),digits=1)
+}};data} 
+
+Mean <- Meanformissing(irisMissing) #Calling the function and assigning the transformed data to Mean.
+
+ii.Here I try replacing the missing values with the median of the data:
+ This function takes data as its argument. Then ,the for loop loops through all the columns of the given data set. Further, As median command works only on numeric data adding the if condition allows median to work on integer data also. Finally I checks for missing values and replaces them with the median of the given column by rounding it. Lastly function returns the new dataset with missing values replaced with median of the column.
+
+Medianformissing <- function(data){  
+for(i in 1:ncol(data)){
+if(class(data[,i])=="integer" | class(data[,i])=="numeric")
+{data[is.na(data[,i]), i] <- round(median(data[,i], na.rm = TRUE),digits=1) 
+}};data} 
+
+Median <- Medianformissing(irisMissing) #Calling the function and assigning the transformed data to Median.
+
+iii.Here I try replacing the missing values with the mode of the data:
+This function takes data as its argument. The for loop loops through all the columns of the given data set. As mode command works only on numeric data adding the if condition allows mode to work on integer data also.Further missing values are checked and replaced them with the mode of the given column.Finally I returns the new dataset with missing values replaced with mode of the column.
+
+Modeformissing <- function(data){ 
+for(i in 1:ncol(data)){       
+  if(class(data[,i])=="integer" | class(data[,i])=="numeric") 
+{uniqdata <- unique(data[,i]); # providing data as a vector as input
+data[is.na(data[,i]), i] <- uniqdata[which.max(tabulate(match(data[,i],uniqdata)))]}} 
+; data} 
+mode<-Modeformissing(irisMissing) #Calling the function and assigning the transformed data to Mode.
+
+B3. 
+foo() function takes a data frame(irisMissing) and a missing value function(Meanformissing) as arguments and returns a new data frame with the missing values replaced with values as determined by the missing value function:
+
+foo <- function(data, missingvalue) 
+{missingvalue(data)
+ } 
+
+foo(irisMissing, Meanformissing) # Calls the foo function passing irisMissing and Meanformissing as arguments.
+
+
+B4.
+par(mfrow=c(2,2))# This allows visualizing all the four histograms(as plotted below) simultaneously
+a)Histogram for the missing value strategy when the column is dropped:
+hist(irisDrop$Sepal.Width,xaxt='n', main="Sepal width in data with missing values dropped", xlab="Sepal Width", ylab="Frequency")
+axis(side=1, at=seq(2,4.4, 0.2), labels=seq(2,4.4,0.2))
+
+b)Histogram for the missing value strategy when the missing value is replaced with mean:
+hist(Mean$Sepal.Width, xaxt='n',main="Sepal width in data with missing values replaced with mean", xlab="Sepal width", ylab="Frequency")
+axis(side=1, at=seq(2,4.4, 0.2), labels=seq(2,4.4,0.2))
+
+c)Histogram for the missing value strategy when the missing value is replaced with median:
+hist(Median$Sepal.Width, xaxt='n',main="Sepal width in data with missing values replaced with median", xlab="Sepal width", ylab="Frequency")
+axis(side=1, at=seq(2,4.4, 0.2), labels=seq(2,4.4,0.2))
+
+d)The histograms and boxplots generated as an output here are submitted in PDF format. 
+
+Histogram for the missing value strategy when the missing value is replaced with mode:
+hist(mode$Sepal.Width, xaxt='n',main="Sepal width in data with missing values replaced with mode", xlab="Sepal width", ylab="Frequency")
+axis(side=1, at=seq(2,4.4, 0.2), labels=seq(2,4.4,0.2))
+
+par(mfrow=c(2,2))# This allows visualizing all the four boxplots(as plotted below) simultaneously
+boxplot(irisDrop$Sepal.Width, main="Sepal width in data with missing values dropped", xlab="Sepal Width") #boxplot when the rows with missing value are dropped.
+boxplot(Mean$Sepal.Width, main="Sepal width in data with missing values replaced with mean", xlab="Sepal Width") #boxplot when the missing value is replaced with mean.
+boxplot(Median$Sepal.Width, main="Sepal width in data with missing values replaced with median", xlab="Sepal Width") #boxplot when the missing value is replaced with median.
+boxplot(mode$Sepal.Width, main="Sepal width in data with missing values replaced with mode", xlab="Sepal Width") #boxplot when the missing value is replaced with mode.
+
+Comment on Histograms:
+It can be clearly observed from the set of histograms that :
+a)When the Sepal width rows with missing values is dropped and histogram is plotted then,its observed that values between range 2.8 to 3 have maximum frequency in the data i.e about 34,values between range 3 to 3.2 have second highest frequency i.e 23,and the values with the third highest frequency are those between range 2.6 to 2.8.Values with lowest frequency are those with their value between 4 to 4.4 as their frequency is hardly 2.
+
+b)When the Sepal width rows with missing values is replaced with mean and a histogram is plotted then,its observed that values between range 3 to 3.2 have maximum frequency in the data i.e about 40,values between range 2.8 to 3.0 have second highest frequency i.e 33,and the values with the third highest frequency(20) are those between range 2.6 to 2.8.Values with lowest frequency are those with their value between 4 to 4.4 as their frequency is hardly 2. 
+
+c)When the Sepal width rows with missing values is replaced with median and a histogram is plotted then,its observed that values between range 2.8 to 3.0 have maximum frequency in the data i.e about 48,values between range 3 to 3.2 have second highest frequency i.e around 23,and the values with the third highest frequency(20) are those between range 2.6 to 2.8.Values with lowest frequency are those with their value between 4 to 4.4 as their frequency is just 1. 
+
+d)When the Sepal width rows with missing values is replaced with mode and a histogram is plotted then,its observed that the plot is almost completely similar to that of histogram plotted with missing values is replaced with median.
+
+
+Comment on boxplot:
+It can be clearly observed from the set of boxplots that :
+a)When the Sepal width rows with missing values is dropped and boxplot is plotted then,its observed that 1st quartile here is around 2.8,2nd quartile or median of the data is 3.0 and the 3rd quartile is around 3.3.The minimum value is around 2.2 and the maximum value is around 4.0.	
+
+b)When the Sepal width rows with missing values is replaced with mean and a boxplot is plotted then,its observed that 1st quartile here is around 2.8 i.e same as previous boxplot, 2nd quartile or median of the data is 3.1 and the 3rd quartile is around 3.2.The minimum value is around 2.2 and the maximum value is around 3.75.	
+
+c)When the Sepal width rows with missing values is replaced with median and a boxplot is plotted then,its observed that 1st quartile here is around 2.8,2nd quartile or median of the data is 3.0 and the 3rd quartile is around 3.2.The minimum value is around 2.2 and the maximum value is around 3.75.	
+
+d)When the Sepal width rows with missing values is replaced with mode and a boxplot is plotted then,its observed that the boxplot is almost completely similar to that of boxplot plotted with missing values is replaced with median.
+
+
+PART C:
+C1.Here after loading the loan file,First a loop is ran through the dataset to identify the columns which are not ordered using function is.factor().After that a vector label is generated to label the rows with their specific bins.Finally, cut function is used to divide the range of income into bins and labeling all the bins using the vector label.  
+
+loan = read.csv("C:/Users/dkoec/Downloads/loan.csv")
+disc <- function(dataset, number_of_bins)
+{for(i in 1:ncol(dataset))
+{if(is.factor(dataset[,i])==FALSE)
+{label=c(paste("bin",(1:number_of_bins), sep="")); 
+dataset[,i] <- cut(dataset[,i], number_of_bins, labels = label)}}; 
+dataset}
+
+Calling the function:
+disc(loan,3)# Call the disc function to generate the output by passing loan as dataset and 3 as number of bins.
+
+
+C2.The C2 question has been done on paper, scanned and is attached as PDF.
+
+
+PART D:
+a) For part D question a has been submitted in the handwritten and scanned pdf file.
+
+b) At first the dataset and class are provided as the arguments of the function NB for which the prior probability and the conditional probability needs to be determined. Then the argument received as dataset is attached. Attaching dataset to the search path allows reference to the variables in the data frame by their names alone, rather than components of the data frame. Further, summary(class) returns the number of males and females here while dim(dataset)[1] gets the total number of rows in the data frame.The result obtained from the division of these values is stored in the variable prior_prob and the prior_prob variable is printed to yield the prior probabilities. Then, using the which command the position of the class column is set to skip the column stored in the variable escape, in the for loop, after that for class level a for loop is executed for each of the columns,except for the column stored in the escape variable, the summary of the column given the class is calculated and divided by the sum of all the class instances for the conditional probability calculation.The function is as shown below:
+
+
+NB <- function(dataset, class){ 
+attach(dataset);
+prior_prob <- summary(class)/(dim(dataset)[1]); 
+print("For the class Male and Female Prior probabilities are:");
+print(prior_prob); 
+escape <- which(names(dataset)== deparse(substitute(class)));  
+for(j in levels(class)){ 
+print("For the class given below Conditional probability for Hair and Eye are:");
+print(j);
+for(i in 1:ncol(dataset)){
+if(i!=escape){
+condProb<-c(round(summary(dataset[,i][class==j])/sum(summary(dataset[,i][class==j])), digits=2));
+print(condProb)
+}}}}
+
+
+#Calling the function:
+Before calling the function a set of steps are done which involve Loads the HairEyeColor data to the session and Creating a new HairEyeColor data frame. Further, I Fetch the fourth column i.e frequency column from the original dataset and load it to the frequency variable.Then, the data frame of HairEyeColor by duplicating the rows as per the frequency and then the fourth column with the frequency value is deleted.Finally the function is called by passing the required values.Steps are as below:
+
+data("HairEyeColor")
+HairEyeColor <- data.frame(HairEyeColor) 
+Frequency <- HairEyeColor[,4] 
+HairEyeColor <- HairEyeColor[rep(seq_len(nrow(HairEyeColor)), Frequency), -4]
+NB(HairEyeColor, Sex)
+
+In order to verify my answers for the HairEyeColor dataset, by using the Naive Bayes classifier in R,I tried the below commands. At first library is used to load the package e1071 and data command is used to define the data frame of predictors which is HairEyeColor in this case. Finally the naiveBayes function is used to predict the conditional and  prior probability of the class variable Sex with respect to HairEyeColor dataset. After analyzing the results I found that the results obtained fro this function were similar to the results that I obtained using my function.
+
+library(e1071)
+data(HairEyeColor)
+model<-naiveBayes(Sex~.,data=HairEyeColor)
+model
+
+c) For part D question c has been submitted in the handwritten and scanned pdf file.
+
+d) Here I firstly installed the klaR package and then loaded the package.Then from the dataset the complete rows and the rows with missing data are identified and stored in two different variables. Further, the columns Sepal.Length,Sepal.Width,Petal.Length,Petal.Width,Species from the complete rows were assigned to the irisMissing_attribute variable. Moreover,a vector labels is created for the discretization of the missing value variable,Sepal.width by considering the mean of each class in 5 bins.
+
+As the NaiveBayes function from the klaR package requires a matrix data frame and a grouping class value, the attribute that needs to be classified, should must be a nominal variable. So  the assumption made by me for creating this model is that the variable Sepal.Width is discretized in 5 bins using command cut which assigns equal length for each of the classes. Further the  Naive Bayes tree is created assuming that I need to check what value replaces the missing values.Hence I took the mean of each bin, which was facilitated using the labels variable.Finally the predict command is used to predict the model which returns the missing values for the irisMissing data frame.
+
+install.packages("klaR")
+library(klaR)
+irisMissing_complete <- irisMissing[complete.cases(irisMissing),]
+irisMissing_missing <- irisMissing[!complete.cases(irisMissing),]
+selected_attributes <- irisMissing_complete[,3:7] 
+labels <- round(tapply(selected_attributes$Sepal.Width, cut(selected_attributes$Sepal.Width, 5), mean), digits=3)
+NaiveBayes_model <- NaiveBayes(selected_attributes, cut(selected_attributes$Sepal.Width,5, labels=labels))
+predict(NaiveBayes_model, irisMissing_missing)$class
+
+
+
+
+
+
+
+
+
+ 
